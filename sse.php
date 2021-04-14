@@ -5,11 +5,16 @@ $conn = (new Database())->getConnection();
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 
-
-
-$index = 0;
+session_start();
+if(!isset($_SESSION["index"])){
+    $_SESSION["index"] = 0;
+}
 
 while (true){
+
+
+    $index = $_SESSION["index"];
+
     $stmt = $conn->query("SELECT * FROM `parameter`;");
     $setting = $stmt->fetch(PDO::FETCH_ASSOC);
     $parameter = $setting["parameter_a"];
@@ -24,6 +29,8 @@ while (true){
 
     $arr = array();
 
+    $arr["x"] = $index;
+
     if($y1Check){
         $arr["y1"] = $y1;
     }
@@ -35,7 +42,10 @@ while (true){
     }
 
     $msg = json_encode($arr);
-    sendSSE(++$index, $msg);
+    sendSSE($index, $msg);
+
+    $_SESSION["index"]++;
+
     sleep(1);
 }
 
